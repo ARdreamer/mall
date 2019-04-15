@@ -159,7 +159,7 @@
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.1</version>
+            <version>3.3</version>
         </dependency>
 
         <!-- file upload -->
@@ -256,6 +256,7 @@
                     <overwrite>true</overwrite>
                 </configuration>
             </plugin>
+            <!--本地jar到服务器-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
