@@ -10,13 +10,14 @@ import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
 public class CookieUtil {
-    private static String COOKIE_DOMAIN = ".happymall.com";
+    private static String COOKIE_DOMAIN = "happymall.com";//.happymall.com
     private static String COOKIE_NAME = "mall_login_token";
 
     public static void writeLoginToken(HttpServletResponse response, String token) {
         Cookie cookie = new Cookie(COOKIE_NAME, token);
         cookie.setDomain(COOKIE_DOMAIN);
         cookie.setPath("/");//设置在根目录
+        cookie.setHttpOnly(true);
         cookie.setMaxAge(60 * 60 * 24 * 365);//-1代表永久，单位是秒，不设置cookie就不会写入硬盘
         log.info("write cookieName:{},cookieValue:{}", cookie.getName(), cookie.getValue());
         response.addCookie(cookie);
