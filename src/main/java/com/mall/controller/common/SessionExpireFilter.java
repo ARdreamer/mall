@@ -14,6 +14,11 @@ import java.io.IOException;
 
 public class SessionExpireFilter implements Filter {
     @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+
+    }
+
+    @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
 
@@ -28,5 +33,10 @@ public class SessionExpireFilter implements Filter {
             }
             filterChain.doFilter(httpServletRequest,servletResponse);
         }
+    }
+
+    @Override
+    public void destroy() {
+
     }
 }

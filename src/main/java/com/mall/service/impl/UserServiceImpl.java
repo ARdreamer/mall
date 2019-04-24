@@ -2,11 +2,11 @@ package com.mall.service.impl;
 
 import com.mall.common.Const;
 import com.mall.common.ServerResponse;
-import com.mall.common.TokenCache;
 import com.mall.dao.UserMapper;
 import com.mall.pojo.User;
 import com.mall.service.IUserService;
 import com.mall.util.MD5Util;
+import com.mall.util.RedisPoolUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -103,7 +103,7 @@ public class UserServiceImpl implements IUserService {
             //说明全部正确
             //token为12小时
             String forgetToken = UUID.randomUUID().toString();
-            TokenCache.setKey(TokenCache.TOKEN_PREFIX + username, forgetToken);
+            RedisPoolUtil.setEx(Const.TOKEN_PREFIX + username, forgetToken, 60 * 60 * 12);
             return ServerResponse.createBySuccess(forgetToken);
         }
         return ServerResponse.createByErrorMessage("问题答案错误");
@@ -118,7 +118,7 @@ public class UserServiceImpl implements IUserService {
             //用户不存在
             return ServerResponse.createByErrorMessage("用户不存在");
         }
-        String token = TokenCache.getKey(TokenCache.TOKEN_PREFIX + username);
+        String token = RedisPoolUtil.get(Const.TOKEN_PREFIX + username);
         if (StringUtils.isBlank(token)) {
             return ServerResponse.createByErrorMessage("token无效或者过期");
         }
