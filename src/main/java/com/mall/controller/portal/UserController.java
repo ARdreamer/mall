@@ -5,12 +5,17 @@ import com.mall.common.ResponseCode;
 import com.mall.common.ServerResponse;
 import com.mall.pojo.User;
 import com.mall.service.IUserService;
+import com.mall.util.CookieUtil;
+import com.mall.util.JsonUtil;
+import com.mall.util.RedisPoolUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 @Controller
@@ -30,10 +35,15 @@ public class UserController {
      */
     @RequestMapping(value = "login.do", method = RequestMethod.POST)
     @ResponseBody
-    public ServerResponse<User> login(String username, String password, HttpSession session) {
+    public ServerResponse<User> login(String username, String password, HttpSession session, HttpServletResponse servletResponse, HttpServletRequest request) {
         ServerResponse<User> response = iUserService.login(username, password);
         if (response.isSuccess()) {
-            session.setAttribute(Const.CURRENT_USER, response.getData());
+            //此处data为用户信息
+//            session.setAttribute(Const.CURRENT_USER, response.getData());
+            CookieUtil.writeLoginToken(servletResponse, session.getId());
+            CookieUtil.readLoginToken(request);
+            CookieUtil.delLoginToken(request, servletResponse);
+            RedisPoolUtil.setEx(session.getId(), JsonUtil.objToString(response.getData()), Const.RedisCacheExtime.REDIS_SESSION_EXTIME);
         }
         return response;
     }
@@ -106,6 +116,7 @@ public class UserController {
         user.setUsername(currentUser.getUsername());
         ServerResponse<User> response = iUserService.updateInformation(user);
         if (response.isSuccess()) {
+            //返回的user中没有username，所以需要set
             response.getData().setUsername(currentUser.getUsername());
             session.setAttribute(Const.CURRENT_USER, response.getData());
         }

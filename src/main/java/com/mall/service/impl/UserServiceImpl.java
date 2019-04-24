@@ -31,7 +31,7 @@ public class UserServiceImpl implements IUserService {
         if (user == null) {
             return ServerResponse.createByErrorMessage("密码错误");
         }
-
+        //因为要返回给前台，所以不能显示密码信息
         user.setPassword(StringUtils.EMPTY);
         return ServerResponse.createBySuccess("登陆成功", user);
     }
@@ -39,6 +39,7 @@ public class UserServiceImpl implements IUserService {
     public ServerResponse<String> register(User user) {
 
         ServerResponse validResponse = this.checkValid(user.getUsername(), Const.USERNAME);
+        //校验不成功，参数类型错误或者username、email已经存在
         if (!validResponse.isSuccess()) {
             return validResponse;
         }
@@ -46,6 +47,7 @@ public class UserServiceImpl implements IUserService {
         if (!validResponse.isSuccess()) {
             return validResponse;
         }
+        //因为是在前台创建，所以为customer
         user.setRole(Const.Role.ROLE_CUSTOMER);
         //MD5密码加密
         user.setPassword(MD5Util.MD5EncodeUtf8(user.getPassword()));
@@ -56,6 +58,11 @@ public class UserServiceImpl implements IUserService {
         return ServerResponse.createBySuccessMessage("注册成功");
     }
 
+    /**
+     * @param str  传过来的user类中的username或者email
+     * @param type Const类中username或者email的表示
+     * @return
+     */
     public ServerResponse<String> checkValid(String str, String type) {
         if (StringUtils.isNotBlank(type)) {
             if (Const.USERNAME.equals(type)) {
@@ -77,6 +84,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     public ServerResponse selectQuestion(String username) {
+        //验证时不存在才会返回成功
         ServerResponse validResponse = this.checkValid(username, Const.USERNAME);
         if (validResponse.isSuccess()) {
             //用户不存在
@@ -93,6 +101,7 @@ public class UserServiceImpl implements IUserService {
         int resultCount = userMapper.checkAnswer(username, question, answer);
         if (resultCount > 0) {
             //说明全部正确
+            //token为12小时
             String forgetToken = UUID.randomUUID().toString();
             TokenCache.setKey(TokenCache.TOKEN_PREFIX + username, forgetToken);
             return ServerResponse.createBySuccess(forgetToken);
@@ -113,6 +122,7 @@ public class UserServiceImpl implements IUserService {
         if (StringUtils.isBlank(token)) {
             return ServerResponse.createByErrorMessage("token无效或者过期");
         }
+        //两次的token一致
         if (StringUtils.equals(forgetToken, token)) {
             String md5Password = MD5Util.MD5EncodeUtf8(passwordNew);
             int rowCount = userMapper.updatePasswordByUsername(username, md5Password);
@@ -125,6 +135,15 @@ public class UserServiceImpl implements IUserService {
         return ServerResponse.createByErrorMessage("修改密码失败");
     }
 
+    /**
+     * 横向越权：横向越权指的是攻击者尝试访问与他拥有相同权限的用户的资源
+     * 纵向越权：纵向越权指的是一个低级别攻击者尝试访问高级别用户的资源
+     *
+     * @param passwordOld
+     * @param passwordNew
+     * @param user
+     * @return
+     */
     public ServerResponse<String> resetPassword(String passwordOld, String passwordNew, User user) {
         //防止横向越权，要校验下这个用户的旧密码，
         int resultCount = userMapper.checkPassword(MD5Util.MD5EncodeUtf8(passwordOld), user.getId());
@@ -143,6 +162,7 @@ public class UserServiceImpl implements IUserService {
         //username不能被更新
         //email也要再次校验
         int resultCount = userMapper.checkEmailByUserId(user.getEmail(), user.getId());
+        //其他人使用了这么email
         if (resultCount > 0) {
             return ServerResponse.createByErrorMessage("email已经存在,请更换email再尝试更新");
         }

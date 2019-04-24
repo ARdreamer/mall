@@ -148,6 +148,7 @@ public class CartServiceImpl implements ICartService {
         if (userId == null) {
             return false;
         }
+        //返回true就是说没选中的有0个，也就是全选了
         return cartMapper.selectCartProductCheckedStatusByUserId(userId) == 0;
     }
 

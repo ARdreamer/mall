@@ -9,6 +9,7 @@ import com.mall.common.ResponseCode;
 import com.mall.common.ServerResponse;
 import com.mall.pojo.User;
 import com.mall.service.IOrderService;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +25,10 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/order/")
+@Slf4j
 public class OrderController {
 
-    private static Logger logger = LoggerFactory.getLogger(OrderController.class);
+//    private static Logger logger = LoggerFactory.getLogger(OrderController.class);
     @Autowired
     private IOrderService iOrderService;
 
@@ -60,11 +62,11 @@ public class OrderController {
 
     @RequestMapping("detail.do")
     @ResponseBody
-    public ServerResponse detail(HttpSession session,Long orderNo) {
+    public ServerResponse detail(HttpSession session, Long orderNo) {
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null)
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), ResponseCode.NEED_LOGIN.getDesc());
-        return iOrderService.getOrderDetail(user.getId(),orderNo);
+        return iOrderService.getOrderDetail(user.getId(), orderNo);
     }
 
     @RequestMapping("list.do")
@@ -73,7 +75,7 @@ public class OrderController {
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null)
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), ResponseCode.NEED_LOGIN.getDesc());
-        return iOrderService.getOrderList(user.getId(),pageNum,pageSize);
+        return iOrderService.getOrderList(user.getId(), pageNum, pageSize);
     }
 
 
@@ -97,13 +99,13 @@ public class OrderController {
             String name = (String) iterator.next();
             String[] values = (String[]) requestParams.get(name);
             String valueStr = "";
-            //1,2,3,4,5,6,7,8,9
+            //拆分成这种形式1,2,3,4,5,6,7,8,9
             for (int i = 0; i < values.length; i++) {
                 valueStr = (i == values.length - 1) ? valueStr + values[i] : valueStr + values[i] + ",";
             }
             params.put(name, valueStr);
         }
-        logger.info("支付宝回调,sign:{},trade_status:{},参数:{}", params.get("sign"), params.get("trade_status"), params.toString());
+        log.info("支付宝回调,sign:{},trade_status:{},参数:{}", params.get("sign"), params.get("trade_status"), params.toString());
         //非常重要
         // 验证回调的正确性，是不是支付宝发的，并且是不是重复通知
         params.remove("sign_type");
@@ -113,7 +115,7 @@ public class OrderController {
                 return ServerResponse.createByErrorMessage("非法请求，验证不通过");
             }
         } catch (AlipayApiException e) {
-            logger.error("验证回调失败", e);
+            log.error("验证回调失败", e);
             e.printStackTrace();
         }
         //TODO 验证各种数据

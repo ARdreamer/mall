@@ -10,6 +10,11 @@ public class Const {
     public static final String EMAIL = "email";
     public static final String USERNAME = "username";
 
+
+    public interface RedisCacheExtime {
+        int REDIS_SESSION_EXTIME = 60 * 30;//30分钟
+    }
+
     public interface ProductListOrderBy {
         Set<String> PRICE_ASC_DESC = Sets.newHashSet("price_desc", "price_asc");
     }
@@ -77,66 +82,66 @@ public class Const {
             }
             throw new RuntimeException("没有找到对应的枚举");
         }
-}
-
-public interface AlipayCallback {
-    String TRADE_STATUS_WAIT_BUYER_PAY = "WAIT_BUYER_PAY";
-    String TRADE_STATUS_TRADE_SUCCESS = "TRADE_SUCCESS";
-
-    String RESPONSE_SUCCESS = "success";
-    String RESPONSE_FAILED = "failed";
-}
-
-
-public enum PayPlatformEnum {
-    ALIPAY(0, "支付宝");
-
-    private String value;
-    private int code;
-
-    PayPlatformEnum(int code, String value) {
-        this.value = value;
-        this.code = code;
     }
 
-    public String getValue() {
-        return value;
+    public interface AlipayCallback {
+        String TRADE_STATUS_WAIT_BUYER_PAY = "WAIT_BUYER_PAY";
+        String TRADE_STATUS_TRADE_SUCCESS = "TRADE_SUCCESS";
+
+        String RESPONSE_SUCCESS = "success";
+        String RESPONSE_FAILED = "failed";
     }
 
-    public int getCode() {
-        return code;
-    }
-}
 
+    public enum PayPlatformEnum {
+        ALIPAY(0, "支付宝");
 
-public enum PaymentTypeEnum {
-    ONLINE_PAY(1, "在线支付");
+        private String value;
+        private int code;
 
-    private String value;
-    private int code;
-
-    PaymentTypeEnum(int code, String value) {
-        this.value = value;
-        this.code = code;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public static PaymentTypeEnum codeOf(int code) {
-        for (PaymentTypeEnum paymentTypeEnum : values()) {
-            if (paymentTypeEnum.getCode() == code) {
-                return paymentTypeEnum;
-            }
+        PayPlatformEnum(int code, String value) {
+            this.value = value;
+            this.code = code;
         }
-        throw new RuntimeException("没有找到对应的枚举");
+
+        public String getValue() {
+            return value;
+        }
+
+        public int getCode() {
+            return code;
+        }
     }
-}
+
+
+    public enum PaymentTypeEnum {
+        ONLINE_PAY(1, "在线支付");
+
+        private String value;
+        private int code;
+
+        PaymentTypeEnum(int code, String value) {
+            this.value = value;
+            this.code = code;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public static PaymentTypeEnum codeOf(int code) {
+            for (PaymentTypeEnum paymentTypeEnum : values()) {
+                if (paymentTypeEnum.getCode() == code) {
+                    return paymentTypeEnum;
+                }
+            }
+            throw new RuntimeException("没有找到对应的枚举");
+        }
+    }
 
 
 }

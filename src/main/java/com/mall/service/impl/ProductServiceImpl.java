@@ -36,6 +36,7 @@ public class ProductServiceImpl implements IProductService {
     public ServerResponse saveOrUpdateProduct(Product product) {
         if (product != null) {
             if (StringUtils.isNotBlank(product.getSubImages())) {
+                //分割出一个主图
                 String[] subImageArray = product.getSubImages().split(",");
                 if (subImageArray.length > 0) {
                     product.setMainImage(subImageArray[0]);
@@ -119,6 +120,7 @@ public class ProductServiceImpl implements IProductService {
         PageHelper.startPage(pageNum, pageSize);
         List<Product> productList = productMapper.selectList();
         List<ProductListVo> productListVoList = Lists.newArrayList();
+        //封装成productListVo
         for (Product p : productList) {
             ProductListVo productListVo = assembleProductListVo(p);
             productListVoList.add(productListVo);
@@ -128,6 +130,12 @@ public class ProductServiceImpl implements IProductService {
         return ServerResponse.createBySuccess(pageResult);
     }
 
+    /**
+     * 一个展示列表，类似好多在一起展示的那种，不需要太详细
+     *
+     * @param product
+     * @return
+     */
     private ProductListVo assembleProductListVo(Product product) {
         ProductListVo productListVo = new ProductListVo();
         productListVo.setCategoryId(product.getCategoryId());
