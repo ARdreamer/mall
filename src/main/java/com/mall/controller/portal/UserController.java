@@ -7,7 +7,7 @@ import com.mall.pojo.User;
 import com.mall.service.IUserService;
 import com.mall.util.CookieUtil;
 import com.mall.util.JsonUtil;
-import com.mall.util.RedisPoolUtil;
+import com.mall.util.RedisShardedPoolUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 @Controller
-@RequestMapping("/user/")
+@RequestMapping("/user")
 public class UserController {
 
     @Autowired
@@ -42,7 +42,7 @@ public class UserController {
             //此处data为用户信息
 //            session.setAttribute(Const.CURRENT_USER, response.getData());
             CookieUtil.writeLoginToken(servletResponse, session.getId());
-            RedisPoolUtil.setEx(session.getId(), JsonUtil.objToString(response.getData()), Const.RedisCacheExtime.REDIS_SESSION_EXTIME);
+            RedisShardedPoolUtil.setEx(session.getId(), JsonUtil.objToString(response.getData()), Const.RedisCacheExtime.REDIS_SESSION_EXTIME);
         }
         return response;
     }
@@ -52,7 +52,7 @@ public class UserController {
     public ServerResponse<String> logout(HttpServletRequest request, HttpServletResponse response) {
         String loginToken = CookieUtil.readLoginToken(request);
         CookieUtil.delLoginToken(request, response);
-        RedisPoolUtil.del(loginToken);
+        RedisShardedPoolUtil.del(loginToken);
 //        session.removeAttribute(Const.CURRENT_USER);
         return ServerResponse.createBySuccess();
     }
@@ -77,7 +77,7 @@ public class UserController {
         if (StringUtils.isEmpty(loginToken)) {
             return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(loginToken);
+        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
         User user = JsonUtil.stringToObj(userJsonStr, User.class);
 
         if (user != null) {
@@ -111,7 +111,7 @@ public class UserController {
         if (StringUtils.isEmpty(loginToken)) {
             return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(loginToken);
+        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
         User user = JsonUtil.stringToObj(userJsonStr, User.class);
         if (user == null) {
             return ServerResponse.createByErrorMessage("用户未登录");
@@ -127,7 +127,7 @@ public class UserController {
         if (StringUtils.isEmpty(loginToken)) {
             return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(loginToken);
+        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
         User currentUser = JsonUtil.stringToObj(userJsonStr, User.class);
         if (currentUser == null) {
             return ServerResponse.createByErrorMessage("用户未登录");
@@ -139,7 +139,7 @@ public class UserController {
             //返回的user中没有username，所以需要set
             response.getData().setUsername(currentUser.getUsername());
 //            session.setAttribute(Const.CURRENT_USER, response.getData());
-            RedisPoolUtil.setEx(loginToken, JsonUtil.objToString(response.getData()), Const.RedisCacheExtime.REDIS_SESSION_EXTIME);
+            RedisShardedPoolUtil.setEx(loginToken, JsonUtil.objToString(response.getData()), Const.RedisCacheExtime.REDIS_SESSION_EXTIME);
 
         }
         return response;
@@ -152,7 +152,7 @@ public class UserController {
         if (StringUtils.isEmpty(loginToken)) {
             return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(loginToken);
+        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
         User currentUser = JsonUtil.stringToObj(userJsonStr, User.class);
         if (currentUser == null) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，需要强制登录");
