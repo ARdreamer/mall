@@ -14,7 +14,7 @@
     <!--<context:annotation-config/>-->
     <aop:aspectj-autoproxy/>
 
-
+    <import resource="applicationContext-spring-session.xml"/>
     <import resource="applicationContext-datasource.xml"/>
     <!--<context:property-placeholder location="classpath:datasource.properties"/>-->
     <bean id="propertyConfigurer"
