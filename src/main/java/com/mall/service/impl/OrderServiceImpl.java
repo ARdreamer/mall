@@ -28,9 +28,11 @@ import com.mall.vo.OrderItemVo;
 import com.mall.vo.OrderProductVo;
 import com.mall.vo.OrderVo;
 import com.mall.vo.ShippingVo;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +47,7 @@ import java.util.*;
 @Slf4j
 public class OrderServiceImpl implements IOrderService {
 
-//    private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
+    //    private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
     @Autowired
     private OrderMapper orderMapper;
 
@@ -567,5 +569,28 @@ public class OrderServiceImpl implements IOrderService {
         }
         return ServerResponse.createByErrorMessage("订单不存在");
 
+    }
+
+    @Override
+    public void close(Integer hour) {
+        Date closeDateTime = DateUtils.addHours(new Date(), -hour);
+        List<Order> orderList = orderMapper.selectOrdersStatusByCreateTime(Const.OrderStatusEnum.NO_PAY.getCode(), DateTimeUtil.dateToStr(closeDateTime));
+        for (Order order : orderList) {
+            List<OrderItem> orderItemList = orderItemMapper.getByOrderNo(order.getOrderNo());
+            for (OrderItem orderItem : orderItemList) {
+                //一定要用主键where条件，防止锁表,且必须是innodb引擎
+                Integer stock = productMapper.selectStockByProductId(orderItem.getProductId());
+                //如果商品被删除了
+                if (stock == null) {
+                    continue;
+                }
+                Product product = new Product();
+                product.setId(orderItem.getProductId());
+                product.setStock(stock + orderItem.getQuantity());
+                productMapper.updateByPrimaryKeySelective(product);
+            }
+            orderMapper.closeOrderByOrderId(order.getId());
+            log.info("关闭订单OrderNo:{}", order.getOrderNo());
+        }
     }
 }

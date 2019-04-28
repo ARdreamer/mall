@@ -37,6 +37,8 @@ public class UserSpringSessionController {
     @RequestMapping(value = "login.do", method = RequestMethod.GET)
     @ResponseBody
     public ServerResponse<User> login(String username, String password, HttpSession session, HttpServletResponse servletResponse) {
+        int i = 0;
+        int j = 666 / i;
         ServerResponse<User> response = iUserService.login(username, password);
         if (response.isSuccess()) {
             //此处data为用户信息
