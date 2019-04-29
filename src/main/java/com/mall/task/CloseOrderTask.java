@@ -23,7 +23,7 @@ public class CloseOrderTask {
         iOrderService.close(hour);
         log.info("关闭订单，定时任务关闭");
     }
-
+    @Scheduled(cron = "0 */1 * * * ?")//一分钟
     public void closeOrderTaskV2() {
         log.info("关闭订单，定时任务启动");
         long lockTimeOut = Long.parseLong(PropertiesUtil.getProperty("lock.timeout", "5000"));
